@@ -5,39 +5,111 @@ let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
 
-public_users.post("/register", (req,res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
-});
 
-// Get the book list available in the shop
-public_users.get('/',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
-});
+public_users.post("/register", (req,res) => {
+  const username = req.query.username;
+  const password = req.query.password;
+  if (username && password) {
+    if (!isValid(username)) { 
+      users.push({"username":username,"password":password});
+      return res.status(200).json({message: "User successfully registred. Now you can login"});
+    } else {
+      return res.status(404).json({message: "User already exists!"});
+    }
+  } else { 
+  return res.status(404).json({message: "Unable to register user."});
+}});
+
+// Get all the book
+public_users.get('/', async (req, res) => {    
+    try {                
+         await new Promise(resolve => setTimeout(resolve, 5000));         
+         res.json(books) 
+    } catch (error) {
+         console.error('Failed to process request:', error);        
+         res.status(500).json({
+              message: "Failed to fetch books", 
+              details: error.message 
+         });
+    }});  
+    
+    
+    
+
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
+public_users.get('/isbn/:isbn', async function (req, res) {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+   let isbnRequested = req.params.isbn;
+   let bookDetails = books[isbnRequested];
+    if(bookDetails) {
+        try{
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        return res.json(bookDetails);
+        } catch (error) {
+            //error here
+            return res.status(404).json({ message: error});
+        }
+    } else {
+        return res.status(404).json({ message: "No book found for the provided ISBN" });
+    }
+  
  });
   
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
+public_users.get('/author/:author', async function (req, res) {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  let authorrequested = req.params.author;
+
+  let bookArray = Object.values(books);
+
+  let bookDetails = bookArray.find(book => book.author === authorrequested);
+
+  if(bookDetails) {
+    try{
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        return res.json(bookDetails);
+    } catch (error) {
+        //error msg here
+    }
+  } else {
+    return res.status(404).json({ message: "No book found for the author" });
+  }
+
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
+public_users.get('/title/:title', async function (req, res) {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  let titlerequested = req.params.title;
+
+  let bookArray = Object.values(books);
+
+  let bookDetails = bookArray.find(book => book.title === titlerequested);
+
+  if(bookDetails) {
+    try {
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    return res.json(bookDetails);
+    } catch (error) {
+        //error msg here
+    }
+  } else {
+    return res.status(404).json({ message: "No book found of this title" });
+  }
+
 });
 
 //  Get book review
 public_users.get('/review/:isbn',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+    let isbnRequested = req.params.isbn;
+    let bookReviews = books[isbnRequested];
+
+     if(books.review && bookReviews) {
+         return res.json(books.review);
+     } else {
+         return res.status(404).json({ message: "No book review found for the provided ISBN" });
+     }
 });
 
 module.exports.general = public_users;
